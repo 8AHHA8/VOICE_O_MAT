@@ -176,7 +176,6 @@ class ControlsMixin:
         self._log("Paused.")
 
     def _abort(self):
-        # Inkrementacja ID sesji ucisza wiszące wątki odtwarzania
         self.playback_session_id += 1
 
         try:
@@ -202,7 +201,6 @@ class ControlsMixin:
         
         self.reel_center_label.configure(text="[ABORT]\n00:00")
         
-        # --- BLOKADA PRZED KOLEJNYM URUCHOMIENIEM ---
         self.btn_start.configure(state="disabled", text="CLEANING...", fg_color=COLOR_BUTTON)
         self.btn_pause.configure(state="disabled", text="|| PAUSE", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)
         self.btn_abort.configure(state="disabled", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)

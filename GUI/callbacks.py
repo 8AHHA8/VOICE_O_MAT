@@ -55,7 +55,6 @@ class CallbacksMixin:
 
     def _wait_for_playback_end(self, session_id):
         while True:
-            # Jeśli w międzyczasie kliknięto Abort lub nowy Play, przerywamy ten wątek
             if session_id != self.playback_session_id:
                 return
 
@@ -68,7 +67,6 @@ class CallbacksMixin:
                 break
             time.sleep(0.1)
 
-        # Upewniamy się, że ID sesji jest nadal aktualne (zapobiega ucięciu nowego audio)
         if session_id != self.playback_session_id:
             return
 

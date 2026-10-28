@@ -39,7 +39,7 @@ def generate_reel_sound(duration=1.2, sample_rate=44100):
 class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin, CallbacksMixin, AvatarMixin, ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("XTTS Studio Deck - Wood & Reels")
+        self.title("VOICE-O-MAT")
         
         window_width = config.WINDOW_WIDTH
         window_height = config.WINDOW_HEIGHT + 180
@@ -82,13 +82,11 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self.last_width = window_width
         self.last_height = window_height
 
-        # Inicjalizacja zmiennych dla Avatara
         self.avatar_frame = 0
         self.avatar_job = None
         self.mouth_phase = 0.0
         self.mouth_openness = 0.0
         
-        # Zmienne do śledzenia myszki i obrotu
         self.eye_tracking_mode = False
         self.mouse_x = 0
         self.mouse_y = 0
@@ -96,9 +94,7 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         
         self.tts_lock = threading.Lock()
         
-        # --- IDENTYFIKATOR SESJI (zapobiega wyścigom przy Abort -> Play) ---
         self.playback_session_id = 0
-        # -------------------------------------------------------------------
 
         if not os.path.exists(config.OUTPUT_DIR):
             os.makedirs(config.OUTPUT_DIR)

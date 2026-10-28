@@ -34,7 +34,6 @@ class BaseMixin:
 
         now = time.time()
         
-        # --- LOGIKA OBROTU ---
         if getattr(self, 'eye_tracking_mode', False) and getattr(self, 'mouse_x', None) is not None:
             target_x = self.mouse_x - self.avatar_label.winfo_rootx()
             dx = target_x - (width // 2)
