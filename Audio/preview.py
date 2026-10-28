@@ -1,9 +1,9 @@
 import os
+import wave
+import uuid
 import numpy as np
-import sounddevice as sd
 import pygame
 from Audio.utils import load_audio_as_wav_temp
-import config
 import config
 
 try:
@@ -38,12 +38,30 @@ class PreviewMixin:
             if wav.size > 0:
                 self.status_cb("[TEST] Playing...")
                 sr = int(self.tts.synthesizer.output_sample_rate * pitch)
-                self.playback_started_cb()
-                sd.play(wav, sr)
+                
+                # Generujemy unikalną nazwę pliku, żeby uniknąć blokady
+                temp_preview = os.path.join(config.TEMP_DIR, f"temp_preview_{uuid.uuid4().hex}.wav")
+                
+                with wave.open(temp_preview, 'wb') as wf:
+                    wf.setnchannels(1)
+                    wf.setsampwidth(2)
+                    wf.setframerate(sr)
+                    wf.writeframes((wav * 32767).astype(np.int16).tobytes())
+
                 duration = len(wav) / sr
+                
+                self.playback_started_cb()
+                pygame.mixer.music.load(temp_preview)
+                pygame.mixer.music.play()
+                
+                # Próbujemy usunąć plik od razu po załadowaniu do pygame
+                try:
+                    os.remove(temp_preview)
+                except:
+                    pass
+
                 self.finish_cb(duration)
-                sd.wait()
-                self.status_cb("[TEST] Ready.")
+                
             else:
                 self.error_cb("Test generated empty audio.")
 
@@ -61,7 +79,7 @@ class PreviewMixin:
                 if PYDUB_AVAILABLE:
                     from pydub import AudioSegment
                     audio = AudioSegment.from_file(file_path)
-                    temp_play = os.path.join(config.TEMP_DIR, "temp_play.wav")
+                    temp_play = os.path.join(config.TEMP_DIR, f"temp_play_{uuid.uuid4().hex}.wav")
                     audio.export(temp_play, format="wav")
                     file_path = temp_play
                 else:
@@ -75,5 +93,13 @@ class PreviewMixin:
             pygame.mixer.music.load(file_path)
             pygame.mixer.music.play()
             self.finish_cb(duration)
+            
+            # Próba usunięcia pliku tymczasowego z dysku
+            if "temp_play_" in file_path:
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
+
         except Exception as e:
             self.error_cb(f"Playback error: {str(e)}")

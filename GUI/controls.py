@@ -2,6 +2,7 @@ import os
 import threading
 import time
 import pygame
+import config
 from GUI.theme import *
 
 class ControlsMixin:
@@ -10,7 +11,6 @@ class ControlsMixin:
         if not selected_file: 
             return self._log("[ERROR] No file selected.")
             
-        import config
         path = os.path.join(config.OUTPUT_DIR, selected_file)
         if not os.path.exists(path): 
             return self._log(f"[ERROR] File not found: {path}")
@@ -110,30 +110,20 @@ class ControlsMixin:
             threading.Thread(target=self.audio_gen.generate, args=(text_path, self.selected_voice_paths, lang_map.get(self.lang_var.get(), "pl"), self.speed_slider.get(), self.pitch_slider.get(), self.pause_event, output_name), daemon=True).start()
 
     def _pause(self):
-        if self.is_playing:
-            pygame.mixer.music.pause()
-            self.is_paused = True
-            self._stop_animation()
-            self._stop_led_blinking()
-            
-            self.btn_start.configure(text="▶ RESUME", state="normal", fg_color=COLOR_RED)
-            self.btn_pause.configure(text="|| PAUSED", state="disabled", fg_color=COLOR_BUTTON)
-            self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
-            
-            self.reel_center_label.configure(text="[PAUSED]\n--:--")
-            self._log("Playback paused.")
-        else:
-            self.is_paused = True
-            self.pause_event.set()
-            
-            self.btn_start.configure(text="▶ RESUME", state="normal", fg_color=COLOR_RED)
-            self.btn_pause.configure(text="|| PAUSED", state="disabled", fg_color=COLOR_BUTTON)
-            self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
-            
-            pygame.mixer.Sound.stop(self.reel_sound)
-            self._stop_animation()
-            self.reel_center_label.configure(text="[PAUSED]\n--:--")
-            self._log("Generation paused.")
+        self.is_paused = True
+        pygame.mixer.music.pause()
+        self.pause_event.set()
+        
+        self._stop_animation()
+        self._stop_led_blinking()
+        pygame.mixer.Sound.stop(self.reel_sound)
+        
+        self.btn_start.configure(text="▶ RESUME", state="normal", fg_color=COLOR_RED)
+        self.btn_pause.configure(text="|| PAUSED", state="disabled", fg_color=COLOR_BUTTON)
+        self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
+        
+        self.reel_center_label.configure(text="[PAUSED]\n--:--")
+        self._log("Paused.")
 
     def _abort(self):
         pygame.mixer.music.stop()
