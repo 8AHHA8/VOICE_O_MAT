@@ -25,6 +25,16 @@ class AudioGenerator(ModelMixin, PreviewMixin, GeneratorMixin):
         self.use_gpu = self.gpu_available
         self.sample_rate = 24000
         self.is_preview = False
+
+        # --- Lip-sync: RMS obwiednia z odtwarzanego audio ---
+        self.rms_envelope = None
+        self.rms_start_time = 0.0
+        self.rms_duration = 0.0
+
+        # --- Sentyment: per segment + dla podglądu ---
+        self.segment_sentiments = None    # lista float (-1..1) per segment
+        self.segment_durations = None     # lista float (s) per segment
+        self.preview_sentiment = 0.0      # float (-1..1)
         
         if not os.path.exists(config.OUTPUT_DIR):
             os.makedirs(config.OUTPUT_DIR)

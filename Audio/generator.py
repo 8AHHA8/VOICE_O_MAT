@@ -1,13 +1,70 @@
 import os
+import json
 import time
 import wave
 import numpy as np
 import torch
 from Audio.utils import read_text_from_file, split_text, load_audio_as_wav_temp
 import config
-import config
+
+# Pipeline sentymentu — ładowany raz na klasę (cache)
+try:
+    from transformers import pipeline as hf_pipeline
+    HF_AVAILABLE = True
+except ImportError:
+    HF_AVAILABLE = False
+
+SENTIMENT_MODEL = "tabularisai/multilingual-sentiment-analysis"
+SENTIMENT_LABEL_TO_SCORE = {
+    "Very Negative": -1.0,
+    "Negative": -0.5,
+    "Neutral": 0.0,
+    "Positive": 0.5,
+    "Very Positive": 1.0,
+}
+
 
 class GeneratorMixin:
+    _sentiment_pipeline = None  # cache klasy
+
+    def _get_sentiment_pipeline(self):
+        if not HF_AVAILABLE:
+            self.log_cb("[SENTIMENT] transformers not available — skipping.")
+            return None
+        if GeneratorMixin._sentiment_pipeline is None:
+            self.log_cb("Loading multilingual sentiment model...")
+            try:
+                GeneratorMixin._sentiment_pipeline = hf_pipeline(
+                    "sentiment-analysis",
+                    model=SENTIMENT_MODEL,
+                    device=0 if self.use_gpu else -1,
+                )
+                self.log_cb("Sentiment model ready.")
+            except Exception as e:
+                self.log_cb(f"[SENTIMENT] load failed: {e}")
+                GeneratorMixin._sentiment_pipeline = False  # marker: nie próbuj ponownie
+        return GeneratorMixin._sentiment_pipeline or None
+
+    def _analyze_segments_sentiment(self, segments):
+        """Zwraca listę sentymentów per segment (-1..1)."""
+        pipe = self._get_sentiment_pipeline()
+        if pipe is None:
+            return [0.0] * len(segments)
+
+        results = []
+        try:
+            preds = pipe(segments, truncation=True, max_length=512)
+            if isinstance(preds, dict):
+                preds = [preds]
+        except Exception as e:
+            self.log_cb(f"[SENTIMENT] batch failed: {e}. Using neutral.")
+            return [0.0] * len(segments)
+
+        for p in preds:
+            label = p.get("label", "Neutral") if isinstance(p, dict) else "Neutral"
+            results.append(SENTIMENT_LABEL_TO_SCORE.get(label, 0.0))
+        return results
+
     def generate(self, text_path, voice_paths, language="pl", speed=1.0, pitch=1.0, pause_event=None, output_filename="generated_audio.wav"):
         self.cancel_requested = False
         self.is_preview = False
@@ -23,6 +80,10 @@ class GeneratorMixin:
             if not segments:
                 raise RuntimeError("No text to read.")
 
+            # --- Analiza sentymentu per segment (przed syntezą) ---
+            segment_sentiments = self._analyze_segments_sentiment(segments)
+            self.log_cb(f"Sentiment analyzed for {len(segment_sentiments)} segments.")
+
             actual_voice_paths = load_audio_as_wav_temp(voice_paths, self.log_cb)
 
             device = self.load_model()
@@ -33,6 +94,7 @@ class GeneratorMixin:
             for idx, segment in enumerate(segments):
                 if self.cancel_requested:
                     self.log_cb("Cancelled by user.")
+                    self.clear_vram()  # <-- ZWALNIANIE VRAM
                     for path in actual_voice_paths:
                         if path not in voice_paths and os.path.exists(path): os.remove(path)
                     return
@@ -93,6 +155,19 @@ class GeneratorMixin:
                 wf.setsampwidth(2) 
                 wf.setframerate(int(self.sample_rate * pitch))
                 wf.writeframes(final_audio.tobytes())
+
+            # --- Zapis sentymentów + czasów per segment ---
+            durations = [len(a) / int(self.sample_rate * pitch) for a in all_audio]
+            sentiment_path = full_path.replace(".wav", "_sentiment.json")
+            try:
+                with open(sentiment_path, "w", encoding="utf-8") as f:
+                    json.dump({
+                        "segments": segment_sentiments,
+                        "durations": durations,
+                    }, f)
+                self.log_cb(f"Sentiment saved to {sentiment_path}")
+            except Exception as e:
+                self.log_cb(f"[SENTIMENT] save failed: {e}")
 
             duration = len(final_audio) / int(self.sample_rate * pitch)
             self.finish_cb((full_path, duration))

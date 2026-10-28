@@ -1,3 +1,7 @@
+
+## `requirements.txt`
+
+```text
 customtkinter==6.0.0
 Pillow==13.0.0
 pygame==2.6.1

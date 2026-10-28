@@ -99,3 +99,16 @@ def load_audio_as_wav_temp(file_paths, log_cb):
             except Exception as e:
                 raise RuntimeError(f"Failed to decode audio file. Make sure FFmpeg is installed. Error: {e}")
     return processed_paths
+
+
+def cleanup_temp_files():
+    """Usuwa wszystkie pliki .wav z folderu tymczasowego."""
+    if not os.path.exists(config.TEMP_DIR):
+        return
+    for filename in os.listdir(config.TEMP_DIR):
+        if filename.lower().endswith(".wav"):
+            file_path = os.path.join(config.TEMP_DIR, filename)
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print(f"Failed to remove temp file {file_path}: {e}")

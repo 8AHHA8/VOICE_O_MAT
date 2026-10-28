@@ -1,37 +1,57 @@
 # VOICE-O-MAT
 
-VOICE-O-MAT is an audiobook generator and text-to-speech application featuring a graphical interface inspired by a retro reel-to-reel tape recorder. Powered by the XTTS v2 text-to-speech engine, the application generates speech using audio samples as voice references.
+VOICE-O-MAT is a desktop audiobook generator and text-to-speech (TTS) application inspired by vintage reel-to-reel tape recorders. Powered by the XTTS v2 speech synthesis engine, it generates speech using audio samples as voice references.
 
-The interface combines modern speech synthesis technology with a vintage aesthetic, including a wooden casing, animated tape reels, LED indicators, and mechanical sound effects.
+The application combines modern AI-powered speech synthesis with a retro interface featuring a wooden enclosure, animated tape reels, LED indicators, mechanical sound effects, and an interactive balloon-style avatar.
 
 ## Features
 
-- **Multi-format text support** — Load text from `.txt`, `.pdf`, `.docx`, and other supported document formats.
-- **Voice cloning** — Use one or multiple audio samples in `.wav`, `.mp3`, `.m4a`, `.ogg`, or `.flac` format as voice references.
-- **Multiple languages** — Generate speech in Polish, English, German, Spanish, French, and Italian.
-- **Speech customization** — Adjust speech speed and pitch using dedicated sliders.
-- **Audio preview** — Generate and listen to a short sample before processing the entire text.
-- **Built-in audio player** — Browse and play previously generated `.wav` files using the Play Last feature.
-- **Retro graphical interface** — Custom wooden styling, 3D-inspired buttons, animated tape reels, and LED indicators.
-- **Mechanical sound effects** — Button clicks and motor sounds enhance the retro experience.
-- **Automatic file saving** — Generated audio files are saved in the `Audio/output_audio/` directory.
+### Text-to-Speech and Audiobook Generation
+
+- **Multi-format text support** — Load text from supported document formats, including `.txt`, `.pdf`, and `.docx`.
+- **Voice cloning** — Use authorized audio samples in `.wav`, `.mp3`, `.m4a`, `.ogg`, and `.flac` formats as voice references.
+- **Multilingual speech synthesis** — Generate speech in Polish, English, German, Spanish, French, and Italian, subject to the capabilities of the selected model.
+- **Speech customization** — Adjust speech speed and pitch using dedicated controls.
+- **Audio preview** — Generate and listen to a short sample before processing the full text.
+- **Built-in audio player** — Play previously generated recordings using the Play Last feature.
+- **Automatic file saving** — Save generated audio recordings as WAV files in `Audio/output_audio/`.
+
+### Interactive Retro Avatar
+
+- **Animated balloon character** — A green, balloon-shaped avatar integrated into the graphical interface.
+- **Audio-reactive lip-sync** — Animate the avatar's mouth according to audio volume using RMS-based measurements.
+- **Idle animations** — Add subtle eye movements and gentle body swaying.
+- **Mouse tracking** — Allow the avatar's eyes to follow the user's mouse cursor.
+- **Manual rotation** — Use directional controls to tilt the avatar left or right.
+- **Dynamic visual effects** — Use shading and dynamic line thickness to enhance the avatar's appearance.
+- **Interaction modes** — Switch between wandering, mouse tracking, and manual rotation.
+
+### Retro Graphical Interface
+
+- Vintage reel-to-reel tape recorder aesthetic.
+- Wooden textures and a custom color palette.
+- Three-dimensional-inspired buttons and controls.
+- Animated tape reels and LED status indicators.
+- Mechanical button clicks and motor sound effects.
+- Integrated text processing, speech generation, and audio playback controls.
 
 ## Requirements
 
-The following software is required to run VOICE-O-MAT:
+The following software and hardware may be required, depending on the selected configuration:
 
-- Python 3.10–3.12
-- Git, for cloning the repository
-- FFmpeg
-- An NVIDIA GPU with compatible CUDA support (optional, for accelerated audio generation)
+- **Python:** 3.10–3.12, subject to compatibility with the installed dependencies.
+- **Git:** Required to clone the repository.
+- **FFmpeg:** Required for supported audio processing and format conversion operations.
+- **NVIDIA GPU:** Optional, but recommended for accelerated speech synthesis.
+- **CUDA-compatible PyTorch:** Required for NVIDIA GPU acceleration.
 
 Python package dependencies are listed in `requirements.txt`.
+
+The first launch may download the XTTS v2 model and its required files. Additional disk space and an internet connection may be necessary.
 
 ## Installation and Setup
 
 ### 1. Clone the Repository
-
-Clone the project and navigate to its directory:
 
 ```bash
 git clone https://github.com/8AHHA8/VOICE_O_MAT.git
@@ -40,10 +60,16 @@ cd VOICE_O_MAT
 
 ### 2. Create a Virtual Environment
 
-Create an isolated Python environment for the project:
+**Windows:**
+
+```bat
+python -m venv venv
+```
+
+**Linux:**
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 ```
 
 ### 3. Activate the Virtual Environment
@@ -60,196 +86,195 @@ venv\Scripts\activate.bat
 .\venv\Scripts\Activate.ps1
 ```
 
+If PowerShell blocks script execution, review your execution policy before changing it.
+
 **Linux:**
 
 ```bash
 source venv/bin/activate
 ```
 
-Using a virtual environment helps isolate the project's dependencies from other Python installations.
+Using a virtual environment helps isolate project dependencies from other Python installations.
 
-### 4. Install Dependencies
-
-Upgrade `pip` and install the required Python packages:
-
-```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-#### Linux-Specific Dependencies (Ubuntu / Debian)
-
-On Linux, some system-level dependencies may need to be installed before running VOICE-O-MAT.
-
-Install the following packages:
-
-```bash
-sudo apt update
-sudo apt install python3-tk portaudio19-dev ffmpeg libmagic1
-```
-
-Depending on the Python packages used by the application, additional development tools may be required:
-
-```bash
-sudo apt install python3-dev build-essential
-```
-
-After installing these packages, activate the virtual environment and install the Python dependencies as described above.
-
-**Note:** These commands are intended for Ubuntu and Debian-based distributions. Other Linux distributions may use different package managers or package names. Additional system libraries may be necessary depending on the installed Python packages.
-
-### 5. Install FFmpeg
-
-FFmpeg is used for audio processing and format conversion.
+### 4. Install System Dependencies
 
 #### Windows
 
-1. Visit the [FFmpeg Builds website](https://www.gyan.dev/ffmpeg/builds/).
-2. Download the `ffmpeg-release-full-shared` archive.
-3. Extract it to a directory, for example:
+Install Git and FFmpeg if they are not already available on your system.
 
-   ```text
-   C:\ffmpeg-shared\
-   ```
+#### Linux — Ubuntu / Debian
 
-4. Add the directory containing `ffmpeg.exe` and the required DLL files to the Windows `PATH` environment variable. For example:
-
-   ```text
-   C:\ffmpeg-shared\bin
-   ```
-
-5. Open a new terminal and verify the installation:
-
-   ```bash
-   ffmpeg -version
-   ```
-
-#### Linux (Ubuntu / Debian)
-
-FFmpeg can be installed using the system package manager:
+Install the system packages required by the application and its audio dependencies:
 
 ```bash
 sudo apt update
-sudo apt install ffmpeg
+sudo apt install python3-tk python3-dev build-essential portaudio19-dev ffmpeg libmagic1
 ```
 
-Verify the installation:
+Some packages may only be necessary if the corresponding dependencies are used by the application. Package names may differ on other Linux distributions.
+
+### 5. Install Python Dependencies
+
+Upgrade pip and install the project's dependencies:
 
 ```bash
-ffmpeg -version
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
-### 6. Install PyTorch with CUDA (Optional)
+If installation fails, check the error message and verify that the Python version and package versions are compatible.
 
-If you have a compatible NVIDIA GPU, a CUDA-enabled version of PyTorch can accelerate audio generation.
+### 6. Configure PyTorch and CUDA (Optional)
 
-For example, the following command installs a build for CUDA 12.1:
+An NVIDIA GPU can accelerate speech synthesis when supported by the installed model and libraries.
+
+Check whether PyTorch can access CUDA:
 
 ```bash
-pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
+python -c "import torch; print('PyTorch:', torch.__version__); print('CUDA available:', torch.cuda.is_available()); print('CUDA version:', torch.version.cuda)"
 ```
 
-**Important:** Select a PyTorch version compatible with your Python version, NVIDIA driver, CUDA requirements, and the project's dependencies. If PyTorch is already specified in `requirements.txt`, check for version conflicts before installing or replacing it.
+For additional GPU information, run:
 
-If you do not have a compatible NVIDIA GPU, follow the CPU configuration supported by the project's dependencies.
+```bash
+nvidia-smi
+```
+
+If you need to install or replace PyTorch, use the official installation selector:
+
+https://pytorch.org/get-started/locally/
+
+**Important:** PyTorch, TorchAudio, TorchCodec (if used), the NVIDIA driver, and the TTS dependencies must be compatible. Do not install an arbitrary CUDA build over the versions required by the project.
+
+CPU execution may be possible, but performance and supported configurations depend on the selected model and installed dependencies.
 
 ### 7. Run the Application
 
-Start VOICE-O-MAT with:
+Start VOICE-O-MAT from the project directory:
 
 ```bash
 python main.py
 ```
 
-On the first launch, the application may download the XTTS v2 model and its required files. The download size may be approximately 1.8 GB, depending on the model files being retrieved. Initial setup time depends on your internet connection and hardware.
+On the first launch, the application may download the required model files. Startup time depends on your internet connection, available hardware, model size, and whether the files are already cached locally.
+
+## Usage
+
+The general workflow is:
+
+1. Launch VOICE-O-MAT.
+2. Load a supported text document or enter text using the available controls.
+3. Select one or more authorized audio samples to use as voice references.
+4. Choose the desired language and adjust the available speech settings.
+5. Generate and listen to a preview, if available.
+6. Start audiobook generation.
+7. Observe the interface animations and avatar behavior.
+8. Access the resulting WAV files in the configured output directory.
+
+The exact controls and available options depend on the installed version of the application.
 
 ## Project Structure
 
-The project separates application configuration, audio processing, model management, and graphical interface components.
+The following is an indicative project structure based on the described application architecture. Update it to match the actual files in the repository.
 
 ```text
 VOICE_O_MAT/
-├── main.py                  # Main application entry point
-├── config.py                # Application configuration, paths, and colors
-├── requirements.txt         # Python dependencies
+├── main.py
+├── config.py
+├── requirements.txt
+├── README.md
 ├── Audio/
-│   ├── clicks.py            # Mechanical sound effects
-│   ├── engine.py            # Audio engine integrating components
-│   ├── generator.py         # Speech and audiobook generation
-│   ├── model.py             # TTS model and VRAM management
-│   ├── preview.py           # Preview generation and playback
-│   ├── utils.py             # Document and audio utilities
-│   └── output_audio/        # Generated WAV files
-├── GUI/
-│   ├── app.py               # Main graphical application
-│   ├── controls.py          # Start, pause, and stop controls
-│   ├── sections.py          # Interface layout and sections
-│   ├── animations.py        # Tape reel and timer animations
-│   ├── theme.py             # Colors and wood texture generation
-│   └── widgets.py           # Custom interface widgets
-└── README.md                # Project documentation
+│   ├── clicks.py
+│   ├── engine.py
+│   ├── generator.py
+│   ├── model.py
+│   ├── preview.py
+│   ├── utils.py
+│   └── output_audio/
+└── GUI/
+    ├── app.py
+    ├── avatar.py
+    ├── controls.py
+    ├── sections.py
+    ├── animations.py
+    ├── theme.py
+    └── widgets.py
 ```
-
-**Note:** This tree describes the expected project structure. Update it if the actual repository contains different filenames or directories.
-
-## Interface Design
-
-VOICE-O-MAT is designed to resemble a vintage reel-to-reel tape recorder while providing a modern text-to-speech workflow.
-
-The visual design includes:
-
-- Procedurally generated wood textures.
-- Three-dimensional, tactile-looking buttons.
-- Animated tape reels.
-- LED status indicators.
-- Mechanical sound effects.
-
-The interface aims to make audiobook creation more engaging by combining speech synthesis with the appearance of classic audio equipment.
 
 ## Audio Output
 
-Generated audio files are saved in WAV format in the following directory:
+Generated recordings are saved in WAV format in:
 
 ```text
 Audio/output_audio/
 ```
 
-Previously generated recordings can be accessed through the application's built-in audio player.
+Previously generated recordings can be accessed through the built-in audio player, where supported.
+
+The application does not require sentiment metadata files as part of the described workflow.
 
 ## Troubleshooting
 
 ### FFmpeg Is Not Recognized
 
-If the terminal reports that `ffmpeg` is not recognized, check that FFmpeg is installed and its executable directory has been added to the system `PATH`. Restart the terminal after changing environment variables.
+If the terminal reports that `ffmpeg` is not recognized, verify that FFmpeg is installed and its executable directory is included in the system `PATH`.
 
-### Missing Tkinter on Linux
+Open a new terminal and check the installation:
 
-If Python reports that `tkinter` is unavailable, install the appropriate package for your distribution. On Ubuntu and Debian, use:
+```bash
+ffmpeg -version
+```
+
+### Tkinter Is Missing on Linux
+
+Install Tkinter for the Python installation being used:
 
 ```bash
 sudo apt install python3-tk
 ```
 
-### Missing Audio Libraries on Linux
+If Tkinter remains unavailable, verify that the virtual environment uses a compatible Python installation.
 
-If audio-related dependencies fail to install or initialize, check whether PortAudio development files are installed:
+### Audio Libraries Fail to Initialize
+
+On Ubuntu or Debian, install the PortAudio development files:
 
 ```bash
 sudo apt install portaudio19-dev
 ```
 
+Also verify that the selected audio backend is supported by your operating system.
+
 ### CUDA or GPU Errors
 
-Verify that your NVIDIA driver and installed PyTorch build are compatible. If GPU acceleration is unavailable, use a CPU configuration supported by the application.
+Check the NVIDIA driver and verify CUDA availability in PyTorch:
+
+```bash
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+If GPU inference is unavailable, verify the installed PyTorch build and model requirements. Switch to CPU execution only if the application's configuration and dependencies support it.
+
+### Model Download or Loading Errors
+
+Check your internet connection, available disk space, and access to the model repository. Ensure that the installed TTS package supports the configured XTTS v2 model.
+
+### Slow Speech Generation
+
+Inference speed depends on the selected model, text length, hardware, and runtime configuration. Use a compatible GPU configuration when available and close other memory-intensive applications if GPU memory is limited.
+
+### Avatar Animations Do Not Work
+
+Verify that the avatar component is present and initializes correctly. Check the application logs for missing modules or runtime errors. Ensure that the relevant animation and audio-processing components are included in the current version.
 
 ## License and Responsible Use
 
-VOICE-O-MAT is intended for educational and personal projects. It relies on third-party libraries and the XTTS v2 model.
+VOICE-O-MAT uses third-party libraries and AI models, including XTTS v2.
 
-Review the licenses and terms of use of all third-party dependencies and models before redistributing the application or using it commercially.
+Before redistributing the application or using it commercially, review the licenses, usage restrictions, and attribution requirements of the project, its dependencies, and its model weights.
 
-**Voice cloning and consent:** Use voice cloning only when you have the necessary authorization. Cloning a person's voice without permission, or using generated speech to impersonate or deceive others, may violate applicable laws or personal rights. Additional licensing restrictions may apply to commercial use.
+**Voice cloning and consent:** Use voice references only when you have the necessary authorization. Do not use generated speech to impersonate or deceive others. Voice cloning may be subject to applicable laws, privacy requirements, and personal rights.
 
 ## Author
 
-GitHub repository: [8AHHA8/VOICE_O_MAT](https://github.com/8AHHA8/VOICE_O_MAT)
+GitHub repository: https://github.com/8AHHA8/VOICE_O_MAT

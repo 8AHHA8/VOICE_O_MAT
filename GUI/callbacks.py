@@ -5,8 +5,12 @@ import pygame
 from GUI.theme import *
 
 class CallbacksMixin:
-    def _on_playback_started(self): 
-        pygame.mixer.Sound.stop(self.reel_sound)
+    def _on_playback_started(self):
+        try:
+            if pygame.mixer.get_init():
+                pygame.mixer.Sound.stop(self.reel_sound)
+        except pygame.error:
+            pass
 
     def _on_progress(self, percent): 
         self.reel_progress = percent
@@ -25,7 +29,11 @@ class CallbacksMixin:
             self._stop_animation()
             self._stop_timer()
             self._stop_led_blinking()
-            pygame.mixer.Sound.stop(self.reel_sound)
+            try:
+                if pygame.mixer.get_init():
+                    pygame.mixer.Sound.stop(self.reel_sound)
+            except pygame.error:
+                pass
             
             elapsed = int(time.time() - self.start_time)
             self.reel_center_label.configure(text=f"[DONE]\n{elapsed//60:02d}:{elapsed%60:02d}")
@@ -42,16 +50,37 @@ class CallbacksMixin:
             threading.Thread(target=self._wait_for_playback_end, daemon=True).start()
 
     def _wait_for_playback_end(self):
-        while pygame.mixer.music.get_busy():
+        # Czekamy, aż audio przestanie lecieć — odpornie na:
+        # - mixer niezainicjalizowany
+        # - mixer zamknięty w trakcie (np. przy zamykaniu aplikacji)
+        # - PAUZĘ (audio nie leci, ale nie jest skończone)
+        while True:
+            try:
+                if not pygame.mixer.get_init():
+                    break
+                # Jeśli jesteśmy na pauzie, nie kończymy — czekamy na wznowienie
+                if not self.is_paused and not pygame.mixer.music.get_busy():
+                    break
+            except pygame.error:
+                break
             time.sleep(0.1)
-            
-        # Upewniamy się, że muzyka jest zatrzymana (ucina ewentualne halucynacje)
-        pygame.mixer.music.stop()
-            
-        self.after(0, self._on_playback_finished)
-        
+
+        # Upewniamy się, że muzyka jest zatrzymana
+        try:
+            if pygame.mixer.get_init():
+                pygame.mixer.music.stop()
+        except pygame.error:
+            pass
+
+        # Planujemy zakończenie na wątku GUI (after jest bezpieczne)
+        try:
+            self.after(0, self._on_playback_finished)
+        except Exception:
+            pass
+
     def _on_playback_finished(self):
         self.is_playing = False
+        self.is_paused = False
         self._stop_animation()
         self._stop_led_blinking()
         
@@ -69,7 +98,11 @@ class CallbacksMixin:
         self._stop_animation()
         self._stop_timer()
         self._stop_led_blinking()
-        pygame.mixer.Sound.stop(self.reel_sound)
+        try:
+            if pygame.mixer.get_init():
+                pygame.mixer.Sound.stop(self.reel_sound)
+        except pygame.error:
+            pass
         
         self.btn_preview.configure(state="normal")
         self.btn_play_last.configure(state="normal")
