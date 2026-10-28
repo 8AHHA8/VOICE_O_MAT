@@ -53,13 +53,10 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
         self.configure(fg_color="#2a1d16")
         ctk.set_appearance_mode("dark")
-        
-        # Nadpisanie motywu przycisków
+
         apply_custom_button_theme()
 
-        # --- BLOKADA ZMIANY ROZMIARU OKNA ---
         self.resizable(False, False)
-        # ------------------------------------
 
         try:
             pygame.mixer.init()
@@ -86,23 +83,18 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self.last_width = window_width
         self.last_height = window_height
 
-        # Inicjalizacja zmiennych dla Avatara
         self.avatar_frame = 0
         self.avatar_job = None
 
-        # Inicjalizacja zmiennych dla ust
         self.mouth_phase = 0.0
         self.mouth_openness = 0.0
         
-        # Zmienne do śledzenia myszki i obrotu
         self.eye_tracking_mode = False
         self.mouse_x = 0
         self.mouse_y = 0
         self.manual_rotation = False
         
-        # --- GLOBALNA BLOKADA TTS (Zapobiega wyścigom na GPU) ---
         self.tts_lock = threading.Lock()
-        # --------------------------------------------------------
 
         if not os.path.exists(config.OUTPUT_DIR):
             os.makedirs(config.OUTPUT_DIR)
@@ -134,7 +126,6 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self._refresh_playlist()
         self.bind("<Configure>", self._on_window_resize)
         
-        # Bindowanie ruchu myszki
         self.bind("<Motion>", self._on_mouse_move)
         
         self.protocol("WM_DELETE_WINDOW", self._on_closing)

@@ -8,7 +8,6 @@ class SectionsMixin:
         self.bg_label.pack(fill="both", expand=True, padx=0, pady=0)
         self.bg_label.configure(image=generate_wood_texture(self.last_width + 100, self.last_height + 100))
 
-        # --- LEWA STRONA (Główne GUI) ---
         self.main_container = ctk.CTkFrame(self.bg_label, fg_color="transparent")
         self.main_container.place(relx=0.02, rely=0.5, anchor="w", relwidth=0.62, relheight=0.94)
 
@@ -24,20 +23,17 @@ class SectionsMixin:
         self._build_controls_frame()
         self._build_terminal_frame()
 
-        # --- PRAWA STRONA (Monitor ASCII) ---
         self.monitor_outer = ctk.CTkFrame(self.bg_label, fg_color="#222222", corner_radius=20, border_width=4, border_color=COLOR_SHADOW)
         self.monitor_outer.place(relx=0.98, rely=0.5, anchor="e", relwidth=0.34, relheight=0.94)
 
         self.monitor_inner = ctk.CTkFrame(self.monitor_outer, fg_color="#1c1c1c", corner_radius=15, border_width=2, border_color=COLOR_HIGHLIGHT)
         self.monitor_inner.pack(fill="both", expand=True, padx=12, pady=12)
         
-        # Konfiguracja grid dla monitor_inner (3 rzędy)
-        self.monitor_inner.grid_rowconfigure(0, weight=1) # Ekran awatara
-        self.monitor_inner.grid_rowconfigure(1, weight=0) # Strzałki
-        self.monitor_inner.grid_rowconfigure(2, weight=0) # Przyciski trybów
+        self.monitor_inner.grid_rowconfigure(0, weight=1)
+        self.monitor_inner.grid_rowconfigure(1, weight=0)
+        self.monitor_inner.grid_rowconfigure(2, weight=0)
         self.monitor_inner.grid_columnconfigure(0, weight=1)
 
-        # 1. EKRAN AWATARA (Retro CRT Style)
         self.monitor_screen = ctk.CTkFrame(
             self.monitor_inner, fg_color=COLOR_SHADOW, corner_radius=12, border_width=2, border_color="#333333"
         )
@@ -56,7 +52,6 @@ class SectionsMixin:
         
         self._update_avatar()
 
-        # 2. PRZYCISKI STRZAŁEK (Rząd 1)
         arrows_frame = ctk.CTkFrame(self.monitor_inner, fg_color="transparent")
         arrows_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 5))
 
@@ -78,7 +73,6 @@ class SectionsMixin:
         )
         self.btn_arrow_right.pack(side="left", expand=True, padx=(5, 0))
 
-        # 3. PRZYCISKI TRYBÓW (Rząd 2)
         tracking_frame = ctk.CTkFrame(self.monitor_inner, fg_color="transparent")
         tracking_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=(0, 10))
 

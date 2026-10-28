@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import os
-import time  # <-- DODANY IMPORT
+import time
 import pygame
 import config
 from GUI.theme import *
@@ -101,9 +101,7 @@ class HandlersMixin:
         except pygame.error:
             pass
             
-        # --- CZYSZCZENIE PRZY ZAMYKANIU ---
         cleanup_temp_files()
-        # ----------------------------------
         
         self.destroy()
 

@@ -17,12 +17,9 @@ COLOR_SHADOW = "#111111"
 COLOR_HIGHLIGHT = "#555555"
 COLOR_PANEL_3D = "#1a1a1a"
 
-# NOWY KOLOR DLA TEKSTU PRZYCISKÓW (wyciągnięty ze zdjęcia)
 COLOR_BUTTON_TEXT = "#d4a343"
 
 def apply_custom_button_theme():
-    # Nadpisujemy domyślny motyw CustomTkintera, aby WSZYSTKIE przyciski
-    # miały żółto-złoty kolor tekstu.
     ctk.ThemeManager.theme["CTkButton"]["text_color"] = [COLOR_BUTTON_TEXT, COLOR_BUTTON_TEXT]
 
 def generate_wood_texture(width, height):

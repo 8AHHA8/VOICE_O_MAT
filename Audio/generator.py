@@ -7,7 +7,6 @@ import torch
 from Audio.utils import read_text_from_file, split_text, load_audio_as_wav_temp
 import config
 
-# Pipeline sentymentu — ładowany raz na klasę (cache)
 try:
     from transformers import pipeline as hf_pipeline
     HF_AVAILABLE = True
@@ -25,7 +24,7 @@ SENTIMENT_LABEL_TO_SCORE = {
 
 
 class GeneratorMixin:
-    _sentiment_pipeline = None  # cache klasy
+    _sentiment_pipeline = None
 
     def _get_sentiment_pipeline(self):
         if not HF_AVAILABLE:
@@ -42,7 +41,7 @@ class GeneratorMixin:
                 self.log_cb("Sentiment model ready.")
             except Exception as e:
                 self.log_cb(f"[SENTIMENT] load failed: {e}")
-                GeneratorMixin._sentiment_pipeline = False  # marker: nie próbuj ponownie
+                GeneratorMixin._sentiment_pipeline = False
         return GeneratorMixin._sentiment_pipeline or None
 
     def _analyze_segments_sentiment(self, segments):
@@ -80,7 +79,6 @@ class GeneratorMixin:
             if not segments:
                 raise RuntimeError("No text to read.")
 
-            # --- Analiza sentymentu per segment (przed syntezą) ---
             segment_sentiments = self._analyze_segments_sentiment(segments)
             self.log_cb(f"Sentiment analyzed for {len(segment_sentiments)} segments.")
 
@@ -156,7 +154,6 @@ class GeneratorMixin:
                 wf.setframerate(int(self.sample_rate * pitch))
                 wf.writeframes(final_audio.tobytes())
 
-            # --- Zapis sentymentów + czasów per segment ---
             durations = [len(a) / int(self.sample_rate * pitch) for a in all_audio]
             sentiment_path = full_path.replace(".wav", "_sentiment.json")
             try:

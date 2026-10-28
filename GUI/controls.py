@@ -201,7 +201,6 @@ class ControlsMixin:
         
         self.reel_center_label.configure(text="[ABORT]\n00:00")
         
-        # --- BLOKADA PRZED KOLEJNYM URUCHOMIENIEM ---
         self.btn_start.configure(state="disabled", text="CLEANING...", fg_color=COLOR_BUTTON)
         self.btn_pause.configure(state="disabled", text="|| PAUSE", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)
         self.btn_abort.configure(state="disabled", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)
@@ -214,7 +213,6 @@ class ControlsMixin:
             self.btn_play_last.configure(state="normal")
             self._log("Ready.")
         
-        # Odczekaj 3 sekundy, żeby wątek i VRAM na pewno zostały zwolnione
         self.after(3000, _reenable)
         
         self._log("Aborted. Cleaning up VRAM, please wait...")
