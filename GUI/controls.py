@@ -80,7 +80,6 @@ class ControlsMixin:
             self.is_paused = False
             
             if self.is_playing:
-                # WZNÓW ODTWARZANIE
                 try:
                     if pygame.mixer.get_init():
                         pygame.mixer.music.unpause()
@@ -94,7 +93,6 @@ class ControlsMixin:
                 self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
                 self._log("Playback resumed.")
             else:
-                # WZNÓW GENEROWANIE
                 self.pause_event.clear()
                 self.btn_start.configure(text="▶ START", state="disabled", fg_color="#5a0000")
                 self.btn_pause.configure(text="|| PAUSE", state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
@@ -178,6 +176,9 @@ class ControlsMixin:
         self._log("Paused.")
 
     def _abort(self):
+        # Inkrementacja ID sesji ucisza wiszące wątki odtwarzania
+        self.playback_session_id += 1
+
         try:
             if pygame.mixer.get_init():
                 pygame.mixer.music.stop()
@@ -201,6 +202,7 @@ class ControlsMixin:
         
         self.reel_center_label.configure(text="[ABORT]\n00:00")
         
+        # --- BLOKADA PRZED KOLEJNYM URUCHOMIENIEM ---
         self.btn_start.configure(state="disabled", text="CLEANING...", fg_color=COLOR_BUTTON)
         self.btn_pause.configure(state="disabled", text="|| PAUSE", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)
         self.btn_abort.configure(state="disabled", fg_color=COLOR_BUTTON, text_color=COLOR_TEXT_DIM)
@@ -214,7 +216,6 @@ class ControlsMixin:
             self._log("Ready.")
         
         self.after(3000, _reenable)
-        
         self._log("Aborted. Cleaning up VRAM, please wait...")
 
     def _reset_buttons(self):

@@ -13,7 +13,7 @@ from GUI.animations import AnimationsMixin
 from GUI.handlers import HandlersMixin
 from GUI.controls import ControlsMixin
 from GUI.callbacks import CallbacksMixin
-from GUI.avatar import AvatarMixin
+from Avatar.mixin import AvatarMixin
 
 def generate_reel_sound(duration=1.2, sample_rate=44100):
     t = np.linspace(0, duration, int(sample_rate * duration), False)
@@ -53,9 +53,8 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
         self.configure(fg_color="#2a1d16")
         ctk.set_appearance_mode("dark")
-
+        
         apply_custom_button_theme()
-
         self.resizable(False, False)
 
         try:
@@ -83,18 +82,23 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self.last_width = window_width
         self.last_height = window_height
 
+        # Inicjalizacja zmiennych dla Avatara
         self.avatar_frame = 0
         self.avatar_job = None
-
         self.mouth_phase = 0.0
         self.mouth_openness = 0.0
         
+        # Zmienne do śledzenia myszki i obrotu
         self.eye_tracking_mode = False
         self.mouse_x = 0
         self.mouse_y = 0
         self.manual_rotation = False
         
         self.tts_lock = threading.Lock()
+        
+        # --- IDENTYFIKATOR SESJI (zapobiega wyścigom przy Abort -> Play) ---
+        self.playback_session_id = 0
+        # -------------------------------------------------------------------
 
         if not os.path.exists(config.OUTPUT_DIR):
             os.makedirs(config.OUTPUT_DIR)
@@ -125,7 +129,5 @@ class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin
         self._build_ui()
         self._refresh_playlist()
         self.bind("<Configure>", self._on_window_resize)
-        
         self.bind("<Motion>", self._on_mouse_move)
-        
         self.protocol("WM_DELETE_WINDOW", self._on_closing)

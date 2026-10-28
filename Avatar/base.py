@@ -3,198 +3,11 @@ import time
 import random
 import pygame
 import customtkinter as ctk
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw
 from GUI.theme import COLOR_TERMINAL_TEXT
+from Avatar.face import COLOR_FACE
 
-COLOR_FACE = "#000000"
-
-class AvatarMixin:
-    def _current_sentiment(self):
-        if getattr(self.audio_gen, 'is_preview', False):
-            return getattr(self.audio_gen, 'preview_sentiment', 0.0)
-
-        sentiments = getattr(self.audio_gen, 'segment_sentiments', None)
-        durations = getattr(self.audio_gen, 'segment_durations', None)
-        start = getattr(self.audio_gen, 'rms_start_time', 0.0)
-
-        if not sentiments or not durations or start <= 0:
-            return 0.0
-
-        elapsed = time.time() - start
-        acc = 0.0
-        for dur, sent in zip(durations, sentiments):
-            if elapsed <= acc:
-                return sent
-            acc += dur
-        return sentiments[-1] if sentiments else 0.0
-
-    def _draw_brow(self, draw, cx, cy, length, thickness, slope, inner_left):
-        half = length / 2
-
-        if inner_left:
-            x_inner = cx + half
-            x_outer = cx - half
-        else:
-            x_inner = cx - half
-            x_outer = cx + half
-
-        y_inner = cy + slope
-        y_outer = cy
-
-        t_inner = thickness * 1.0
-        t_mid = thickness * 0.75
-        t_outer = thickness * 0.25
-
-        arch = thickness * 0.4
-        x_mid = (x_inner + x_outer) / 2
-        y_mid = (y_inner + y_outer) / 2 - arch
-
-        top_inner = y_inner - t_inner / 2
-        top_mid = y_mid - t_mid / 2
-        top_outer = y_outer - t_outer / 2
-
-        bot_outer = y_outer + t_outer / 2
-        bot_mid = y_mid + t_mid / 2
-        bot_inner = y_inner + t_inner / 2
-
-        x_q1 = x_inner + (x_mid - x_inner) * 0.5
-        x_q3 = x_mid + (x_outer - x_mid) * 0.5
-
-        pts = [
-            (x_inner, top_inner),
-            (x_q1, top_inner + (top_mid - top_inner) * 0.6),
-            (x_mid, top_mid),
-            (x_q3, top_mid + (top_outer - top_mid) * 0.5),
-            (x_outer, top_outer),
-            (x_outer, bot_outer),
-            (x_q3, bot_mid + (bot_outer - bot_mid) * 0.5),
-            (x_mid, bot_mid),
-            (x_q1, bot_inner + (bot_mid - bot_inner) * 0.6),
-            (x_inner, bot_inner),
-        ]
-
-        draw.polygon(pts, fill=COLOR_FACE)
-
-    def _draw_eye(self, draw, cx, cy, width, height, pupil_dx, pupil_dy, closed=False):
-        half_w = width / 2
-        half_h = height / 2
-
-        if closed:
-            draw.line(
-                [(cx - half_w, cy), (cx + half_w, cy)],
-                fill=COLOR_FACE,
-                width=2,
-            )
-            return
-
-        pupil_r_x = max(1, int(half_w * 0.35))
-        pupil_r_y = max(1, int(half_h * 0.6))
-        pcx = cx + pupil_dx
-        pcy = cy + pupil_dy
-        
-        draw.ellipse(
-            [pcx - pupil_r_x, pcy - pupil_r_y, pcx + pupil_r_x, pcy + pupil_r_y],
-            fill=COLOR_FACE,
-        )
-
-    def _draw_head_outline(self, img, draw, cx, cy, width, height):
-        half_w = width / 2
-        half_h = height / 2
-
-        head_pts = []
-        n = 200
-        for k in range(n):
-            t = k / n
-            angle = t * 2 * math.pi
-
-            px = math.cos(angle)
-            py = math.sin(angle)
-
-            weight = (math.sin(angle) + 1) / 2
-
-            top_px_mult = 1.15
-            top_py_mult = 1.10
-            bot_px_mult = 0.80
-            bot_py_mult = 1.05
-
-            ease = weight * weight * (3 - 2 * weight)
-
-            px_mult = top_px_mult * (1 - ease) + bot_px_mult * ease
-            py_mult = top_py_mult * (1 - ease) + bot_py_mult * ease
-
-            px *= px_mult
-            py *= py_mult
-
-            side_factor = abs(math.cos(angle))
-            if side_factor > 0.7:
-                shrink = 1.0 - (side_factor - 0.7) / 0.3 * 0.06
-                px *= shrink
-
-            head_pts.append((cx + px * half_w, cy + py * half_h))
-
-        yaw = getattr(self, 'avatar_yaw', 0.0)
-        
-        left_weight = 0.5 + yaw * 2.5  
-        left_weight = max(0.02, min(0.98, left_weight))
-
-        draw.polygon(head_pts, fill=(100, 255, 100, 255))
-
-        shade_mask = Image.new("L", img.size, 0)
-        mask_draw = ImageDraw.Draw(shade_mask)
-        
-        gradient_steps = 100
-        for i in range(gradient_steps):
-            t = i / (gradient_steps - 1)
-            x_pos = cx - half_w + t * (2 * half_w)
-            
-            val = left_weight * (1 - t) + (1.0 - left_weight) * t
-            val = int(val * 255)
-            
-            next_x = cx - half_w + ((i + 1) / (gradient_steps - 1)) * (2 * half_w)
-            mask_draw.rectangle([x_pos, cy - half_h - 10, next_x, cy + half_h + 10], fill=val)
-            
-        shade_mask = shade_mask.filter(ImageFilter.GaussianBlur(radius=15))
-
-        shadow_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        shadow_draw = ImageDraw.Draw(shadow_layer)
-        shadow_draw.polygon(head_pts, fill=COLOR_TERMINAL_TEXT)
-        
-        shadow_layer.putalpha(190) 
-        
-        img.paste(shadow_layer, (0, 0), shade_mask)
-
-        return head_pts
-
-    def _draw_balloon_details(self, draw, head_pts, center_x, center_y, head_w, head_h):
-        bottom_point = max(head_pts, key=lambda p: p[1])
-        knot_x = bottom_point[0]
-        knot_y = bottom_point[1]
-
-        knot_size = 8
-        knot_pts = [
-            (knot_x - knot_size, knot_y),
-            (knot_x + knot_size, knot_y),
-            (knot_x, knot_y + knot_size * 1.5)
-        ]
-        draw.polygon(knot_pts, fill=COLOR_TERMINAL_TEXT)
-
-        string_start_y = knot_y + knot_size * 1.5
-        string_length = 220
-        points = []
-        
-        wave_amp = 2.5
-        wave_speed = 0.08
-
-        n_string_pts = 30
-        for i in range(n_string_pts):
-            t = i / (n_string_pts - 1)
-            py = string_start_y + t * string_length
-            wave_env = t
-            px = knot_x + math.sin(self.avatar_frame * wave_speed + t * 10) * wave_amp * wave_env
-            points.append((px, py))
-
-        draw.line(points, fill=COLOR_TERMINAL_TEXT, width=2)
-
+class BaseMixin:
     def _update_avatar(self):
         if not hasattr(self, 'avatar_label'):
             return
@@ -223,7 +36,6 @@ class AvatarMixin:
         
         # --- LOGIKA OBROTU ---
         if getattr(self, 'eye_tracking_mode', False) and getattr(self, 'mouse_x', None) is not None:
-            # Śledzenie myszką
             target_x = self.mouse_x - self.avatar_label.winfo_rootx()
             dx = target_x - (width // 2)
             target_yaw = max(-0.08, min(0.08, dx / 1000.0))
@@ -232,20 +44,16 @@ class AvatarMixin:
             self.avatar_yaw = current_yaw + (target_yaw - current_yaw) * 0.05
             
         elif getattr(self, 'manual_rotation', False):
-            # Ręczny obrót ze strzałek
             current_yaw = getattr(self, 'avatar_yaw', 0.0)
             target_yaw = getattr(self, '_avatar_yaw_target', 0.0)
             
-            # Szybsza interpolacja
             self.avatar_yaw = current_yaw + (target_yaw - current_yaw) * 0.12
             
-            # Zatrzymanie po dotarciu do celu
             if abs(self.avatar_yaw - target_yaw) < 0.01:
                 self.avatar_yaw = target_yaw
                 self.manual_rotation = False
                 
         else:
-            # Automatyczne błądzenie (Wander)
             if now > getattr(self, '_avatar_yaw_until', 0):
                 self._avatar_yaw_target = random.uniform(-0.35, 0.35)
                 self._avatar_yaw_until = now + random.uniform(1.5, 3.0)

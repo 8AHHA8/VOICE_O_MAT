@@ -47,32 +47,37 @@ class CallbacksMixin:
             self.playback_duration = result
             self._log(f"Playback started: {result:.1f}s")
             
-            threading.Thread(target=self._wait_for_playback_end, daemon=True).start()
+            # Inkrementujemy ID sesji i przekazujemy do wątku
+            self.playback_session_id += 1
+            current_session = self.playback_session_id
+            
+            threading.Thread(target=self._wait_for_playback_end, args=(current_session,), daemon=True).start()
 
-    def _wait_for_playback_end(self):
-        # Czekamy, aż audio przestanie lecieć — odpornie na:
-        # - mixer niezainicjalizowany
-        # - mixer zamknięty w trakcie (np. przy zamykaniu aplikacji)
-        # - PAUZĘ (audio nie leci, ale nie jest skończone)
+    def _wait_for_playback_end(self, session_id):
         while True:
+            # Jeśli w międzyczasie kliknięto Abort lub nowy Play, przerywamy ten wątek
+            if session_id != self.playback_session_id:
+                return
+
             try:
                 if not pygame.mixer.get_init():
                     break
-                # Jeśli jesteśmy na pauzie, nie kończymy — czekamy na wznowienie
                 if not self.is_paused and not pygame.mixer.music.get_busy():
                     break
             except pygame.error:
                 break
             time.sleep(0.1)
 
-        # Upewniamy się, że muzyka jest zatrzymana
+        # Upewniamy się, że ID sesji jest nadal aktualne (zapobiega ucięciu nowego audio)
+        if session_id != self.playback_session_id:
+            return
+
         try:
             if pygame.mixer.get_init():
                 pygame.mixer.music.stop()
         except pygame.error:
             pass
 
-        # Planujemy zakończenie na wątku GUI (after jest bezpieczne)
         try:
             self.after(0, self._on_playback_finished)
         except Exception:
