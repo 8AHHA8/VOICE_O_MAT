@@ -23,6 +23,9 @@ class ControlsMixin:
         self.btn_start.configure(state="disabled", fg_color="#5a0000")
         self.btn_pause.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
         self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
+        
+        self.btn_preview.configure(state="disabled")
+        self.btn_play_last.configure(state="disabled")
 
         self._start_led_blinking()
         self._start_animation()
@@ -44,6 +47,9 @@ class ControlsMixin:
         self.btn_start.configure(state="disabled", fg_color="#5a0000")
         self.btn_pause.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
         self.btn_abort.configure(state="normal", fg_color=COLOR_BUTTON_HOVER, text_color=COLOR_TEXT)
+
+        self.btn_preview.configure(state="disabled")
+        self.btn_play_last.configure(state="disabled")
 
         self._start_led_blinking()
         self._start_animation()
@@ -139,6 +145,10 @@ class ControlsMixin:
         pygame.mixer.Sound.stop(self.reel_sound)
         
         self.reel_center_label.configure(text="[ABORT]\n00:00")
+        
+        self.btn_preview.configure(state="normal")
+        self.btn_play_last.configure(state="normal")
+        
         self._reset_buttons()
         self._log("Aborted.")
 

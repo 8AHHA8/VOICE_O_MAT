@@ -29,26 +29,35 @@ class CallbacksMixin:
             
             elapsed = int(time.time() - self.start_time)
             self.reel_center_label.configure(text=f"[DONE]\n{elapsed//60:02d}:{elapsed%60:02d}")
+            
+            self.btn_preview.configure(state="normal")
+            self.btn_play_last.configure(state="normal")
+            
             self._reset_buttons()
             
         elif isinstance(result, (int, float)):
             self.playback_duration = result
             self._log(f"Playback started: {result:.1f}s")
             
-            # Uruchamiamy wątek, który poczeka dokładnie tyle, ile trwa nagranie
-            threading.Thread(target=self._wait_for_playback_end, args=(result,), daemon=True).start()
+            threading.Thread(target=self._wait_for_playback_end, daemon=True).start()
 
-    def _wait_for_playback_end(self, duration):
-        # Czekamy określony czas (plus mały bufor bezpieczeństwa)
-        time.sleep(duration + 0.5)
+    def _wait_for_playback_end(self):
+        while pygame.mixer.music.get_busy():
+            time.sleep(0.1)
             
-        # Resetujemy przyciski dopiero po zakończeniu odtwarzania
+        # Upewniamy się, że muzyka jest zatrzymana (ucina ewentualne halucynacje)
+        pygame.mixer.music.stop()
+            
         self.after(0, self._on_playback_finished)
         
     def _on_playback_finished(self):
         self.is_playing = False
         self._stop_animation()
         self._stop_led_blinking()
+        
+        self.btn_preview.configure(state="normal")
+        self.btn_play_last.configure(state="normal")
+        
         self._reset_buttons()
         self._log("Playback finished.")
 
@@ -61,6 +70,10 @@ class CallbacksMixin:
         self._stop_timer()
         self._stop_led_blinking()
         pygame.mixer.Sound.stop(self.reel_sound)
+        
+        self.btn_preview.configure(state="normal")
+        self.btn_play_last.configure(state="normal")
+        
         self._reset_buttons()
 
     def _set_status(self, text, is_error=False): 

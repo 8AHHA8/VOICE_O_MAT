@@ -39,7 +39,7 @@ class PreviewMixin:
                 self.status_cb("[TEST] Playing...")
                 sr = int(self.tts.synthesizer.output_sample_rate * pitch)
                 
-                # Generujemy unikalną nazwę pliku, żeby uniknąć blokady
+                # Zapisujemy dźwięk do unikalnego pliku
                 temp_preview = os.path.join(config.TEMP_DIR, f"temp_preview_{uuid.uuid4().hex}.wav")
                 
                 with wave.open(temp_preview, 'wb') as wf:
@@ -48,13 +48,14 @@ class PreviewMixin:
                     wf.setframerate(sr)
                     wf.writeframes((wav * 32767).astype(np.int16).tobytes())
 
-                duration = len(wav) / sr
+                # Obliczamy czas trwania, lekko go skracając, aby uciąć "halucynacje"
+                duration = (len(wav) / sr) - 0.2 
+                if duration < 0: duration = len(wav) / sr
                 
                 self.playback_started_cb()
                 pygame.mixer.music.load(temp_preview)
                 pygame.mixer.music.play()
                 
-                # Próbujemy usunąć plik od razu po załadowaniu do pygame
                 try:
                     os.remove(temp_preview)
                 except:
@@ -94,7 +95,6 @@ class PreviewMixin:
             pygame.mixer.music.play()
             self.finish_cb(duration)
             
-            # Próba usunięcia pliku tymczasowego z dysku
             if "temp_play_" in file_path:
                 try:
                     os.remove(file_path)
