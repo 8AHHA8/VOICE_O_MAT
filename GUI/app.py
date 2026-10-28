@@ -36,7 +36,7 @@ def generate_reel_sound(duration=1.2, sample_rate=44100):
 class XTTSReaderApp(SectionsMixin, AnimationsMixin, HandlersMixin, ControlsMixin, CallbacksMixin, ctk.CTk):
         def __init__(self):
             super().__init__()
-            self.title("XTTS Studio Deck - Wood & Reels")
+            self.title("VOICE-O-MAT")
             
             window_width = config.WINDOW_WIDTH
             window_height = config.WINDOW_HEIGHT + 180
